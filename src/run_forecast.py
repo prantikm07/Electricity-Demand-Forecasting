@@ -5,6 +5,7 @@ from features import create_features
 from models import seasonal_naive, ridge_forecast
 from evaluation import mae, wmape, smape
 from plot import plot_actuals_forecast, plot_mae
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--city')
@@ -20,8 +21,8 @@ df = cap_outliers(df)
 df = create_features(df)
 
 forecast_origin = df['x_Timestamp'].iloc[-25]
-forecast_start = forecast_origin + pd.Timedelta('1H')
-actual = df[(df['x_Timestamp'] >= forecast_start) & (df['x_Timestamp'] < forecast_start + pd.Timedelta('24H'))]['t_kWh'].values
+forecast_start = forecast_origin + pd.Timedelta('1h')
+actual = df[(df['x_Timestamp'] >= forecast_start) & (df['x_Timestamp'] < forecast_start + pd.Timedelta('24h'))]['t_kWh'].values
 
 naive_pred = seasonal_naive(df, forecast_start)
 ridge_pred = ridge_forecast(df, ['sin_hour','cos_hour','dayofweek','lag1','lag2','lag3','roll24'], forecast_start)
@@ -42,11 +43,12 @@ metrics = pd.DataFrame({
 metrics.to_csv('artifacts/fast_track/metrics.csv', index=False)
 
 forecast_df = pd.DataFrame({
-    'timestamp': [forecast_start + pd.Timedelta(f'{i}H') for i in range(24)],
+    'timestamp': [forecast_start + pd.Timedelta(f'{i}h') for i in range(24)],
     'yhat': ridge_pred
 })
 forecast_df.to_csv('artifacts/fast_track/forecast_T_plus_24.csv', index=False)
 
 if args.make_plots:
     plot_actuals_forecast(df, ridge_pred, forecast_start, 'artifacts/fast_track/plots/actual_vs_forecast.png')
-    plot_mae([mae([actual[i]], [ridge_pred[i]]) for i in range(24)], 'artifacts/fast_track/plots/horizon_mae.png')
+    plot_mae(np.abs(actual - ridge_pred), 'artifacts/fast_track/plots/horizon_mae.png')
+

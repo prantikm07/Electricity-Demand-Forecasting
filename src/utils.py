@@ -5,7 +5,7 @@ def read_demand(file_path):
     df = pd.read_csv(file_path)
     df['x_Timestamp'] = pd.to_datetime(df['x_Timestamp'])
     df = df.groupby(['x_Timestamp']).agg({'t_kWh':'sum'}).reset_index()
-    df = df.set_index('x_Timestamp').resample('1H').sum()
+    df = df.set_index('x_Timestamp').resample('1h').sum()
     df = df.reset_index()
     df['hour'] = df['x_Timestamp'].dt.hour
     df['dayofweek'] = df['x_Timestamp'].dt.dayofweek
@@ -13,7 +13,7 @@ def read_demand(file_path):
 
 def impute_gaps(df):
     df = df.set_index('x_Timestamp')
-    df = df.asfreq('1H')
+    df = df.asfreq('1h')
     df['t_kWh'] = df['t_kWh'].interpolate(limit_direction='both')
     df = df.reset_index()
     df['hour'] = df['x_Timestamp'].dt.hour
