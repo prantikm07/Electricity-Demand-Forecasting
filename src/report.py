@@ -89,6 +89,7 @@ def create_report(
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 6, 'Performance Summary Table:', ln=True)
     pdf.set_font('Arial', '', 9)
+    pdf.ln(2)
     
     pdf.cell(50, 6, 'Model', 1, 0, 'C')
     pdf.cell(45, 6, 'MAE (kWh)', 1, 0, 'C')
